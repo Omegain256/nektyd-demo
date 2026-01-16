@@ -40,39 +40,27 @@ echo -e "${GREEN}[✔] Authenticated with GitHub${NC}"
 if [ ! -d ".git" ]; then
     echo -e "Initializing Git repository..."
     git init
-    # Add a basic .gitignore if it doesn't exist
-    if [ ! -f ".gitignore" ]; then
-        cat <<EOT >> .gitignore
-node_modules
-.next
-.env
-.DS_Store
-dist
-bin/
-EOT
-    fi
 fi
 
 # 4. Create Repository if it doesn't exist
 REPO_NAME="nektyd-demo"
+
+echo -e "Syncing changes to GitHub..."
+git add .
+git commit -m "Auto-sync: Moving web app to root for Vercel zero-config deployment"
+
 $GH_BIN repo view "$REPO_NAME" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo -e "Adding files and creating initial commit..."
-    git add .
-    git commit -m "Initial commit: Nektyd Demo landing page with Siloed SEO Architecture"
     echo -e "Creating GitHub repository: ${CYAN}$REPO_NAME${NC}..."
     $GH_BIN repo create "$REPO_NAME" --public --source=. --remote=origin --push
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}[✔] Repository created and pushed successfully${NC}"
     else
-        echo -e "${RED}Error creating repository.${NC}"
+        echo -e "${RED}Error creating repository. It might already exist.${NC}"
         exit 1
     fi
 else
     echo -e "${GREEN}[✔] Repository $REPO_NAME already exists on GitHub.${NC}"
-    echo -e "Syncing changes..."
-    git add .
-    git commit -m "Auto-sync: Nektyd Demo update"
     git push origin main
 fi
 
